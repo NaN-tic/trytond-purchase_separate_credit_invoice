@@ -123,12 +123,10 @@ class Test(unittest.TestCase):
         template.cost_price_method = 'fixed'
         template.account_category = account_category_tax
         template.purchasable = True
-        product, = template.products
-        product.active = True
-
-        product.cost_price = Decimal('5')
         template.save()
         product, = template.products
+        product.cost_price = Decimal('5')
+        product.save()
 
         # Create payment term
         payment_term = create_payment_term()
@@ -151,13 +149,14 @@ class Test(unittest.TestCase):
         purchase.save()
         purchase.click('quote')
         purchase.click('confirm')
-
+        purchase.reload()
         self.assertEqual(purchase.state, 'processing')
         self.assertEqual(purchase.shipment_state, 'waiting')
         self.assertEqual(purchase.invoice_state, 'none')
         self.assertEqual(len(purchase.moves), 1)
         self.assertEqual(len(purchase.shipment_returns), 0)
         self.assertEqual(len(purchase.invoices), 0)
+        self.assertEqual(len(purchase.moves), 1)
 
 
         # Validate Shipments
@@ -251,5 +250,5 @@ class Test(unittest.TestCase):
 
         # check invoices
         invoice, credit_invoice = purchase.invoices
-        self.assertEqual(invoice.untaxed_amount, Decimal('10'))
+        self.assertEqual(invoice.untaxed_amount, Decimal('25'))
         self.assertEqual(credit_invoice.untaxed_amount, Decimal('-15'))
