@@ -1,4 +1,4 @@
-from trytond.model import ModelView, fields
+from trytond.model import fields
 from trytond.pool import Pool, PoolMeta
 from trytond.modules.account_product.exceptions import AccountError
 from trytond.i18n import gettext
@@ -30,8 +30,7 @@ class Purchase(metaclass=PoolMeta):
 
         domain = super()._get_grouped_invoice_domain(invoice)
         if context.get('refund_invoice', False):
-            domain.append(('refund_invoice', '=', None))
-
+            domain.append(('payment_type.kind', '!=', 'payable'))
         return domain
 
     def create_refund_invoice(self):
@@ -59,16 +58,46 @@ class Purchase(metaclass=PoolMeta):
 class PurchaseLine(metaclass=PoolMeta):
     __name__ = 'purchase.line'
 
+
+    def _get_invoice_line_quantity(self):
+        quantity = super()._get_invoice_line_quantity()
+        if (not self.purchase.party.purchase_separate_credit_invoice or
+                self.purchase.invoice_method == 'order'):
+            return quantity
+
+        if any([x.state == 'done' for x in self.moves]):
+            return self.quantity
+        else:
+            return 0
+
+
+    def _get_invoiced_quantity(self):
+        invoiced_qty = super()._get_invoiced_quantity()
+        if not self.purchase.party.purchase_separate_credit_invoice:
+            return invoiced_qty
+
+        invoiced_quantity = sum([x.quantity for x in self.invoice_lines
+                if x.quantity >= 0])
+        return invoiced_quantity
+
+
     def get_refund_invoice_line(self):
         pool = Pool()
         InvoiceLine = pool.get('account.invoice.line')
         AccountConfiguration = pool.get('account.configuration')
+        Uom = pool.get('product.uom')
         account_config = AccountConfiguration(1)
 
-        if self._get_invoice_line_quantity() - self._get_invoiced_quantity():
-            return
+        shipped_qty = 0
+        for move in [x for  x in self.moves if x.state == 'done']:
+            shipped_qty += Uom.compute_qty(move.uom, move.quantity, self.unit)
 
-        quantity = self._get_invoice_line_quantity() - self.quantity
+        refunded_quantity = sum([x.quantity for x in self.invoice_lines
+                if x.quantity < 0])
+
+        refund_qty = shipped_qty - self.quantity
+        quantity = Uom.compute_qty(self.unit, refund_qty - refunded_quantity,
+            self.unit)
 
         if quantity >= 0:
             return
