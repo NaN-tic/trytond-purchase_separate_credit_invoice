@@ -132,7 +132,6 @@ class Test(unittest.TestCase):
         payment_term = create_payment_term()
         payment_term.save()
 
-
         set_user(stock_user.id)
 
         # Purchase 2 products with an invoice method 'on shipment'
@@ -146,6 +145,7 @@ class Test(unittest.TestCase):
         purchase.lines.append(purchase_line)
         purchase_line.product = product
         purchase_line.quantity = 2.0
+        purchase_line.unit_price = Decimal('5')
         purchase.save()
         purchase.click('quote')
         purchase.click('confirm')
@@ -157,7 +157,6 @@ class Test(unittest.TestCase):
         self.assertEqual(len(purchase.shipment_returns), 0)
         self.assertEqual(len(purchase.invoices), 0)
         self.assertEqual(len(purchase.moves), 1)
-
 
         # Validate Shipments
         Move = Model.get('stock.move')
@@ -171,7 +170,7 @@ class Test(unittest.TestCase):
         shipment.save()
         self.assertEqual(shipment.origins, purchase.rec_name)
         shipment.click('receive')
-        shipment.click('done')
+        shipment.click('do')
         purchase.reload()
         self.assertEqual(purchase.shipment_state, 'partially shipped')
         self.assertEqual(len(purchase.shipments), 1)
@@ -188,9 +187,11 @@ class Test(unittest.TestCase):
         purchase_line = purchase.lines.new()
         purchase_line.product = product
         purchase_line.quantity = 2.0
+        purchase_line.unit_price = Decimal('5')
         purchase_line = purchase.lines.new()
         purchase_line.product = product
         purchase_line.quantity = 3.0
+        purchase_line.unit_price = Decimal('5')
         purchase.click('quote')
         purchase.click('confirm')
         self.assertEqual(purchase.state, 'processing')
@@ -199,7 +200,6 @@ class Test(unittest.TestCase):
         self.assertEqual(len(purchase.moves), 2)
         self.assertEqual(len(purchase.shipment_returns), 0)
         self.assertEqual(len(purchase.invoices), 0)
-
 
         # Validate Shipments
         Move = Model.get('stock.move')
@@ -213,7 +213,7 @@ class Test(unittest.TestCase):
         shipment.save()
         self.assertEqual(shipment.origins, purchase.rec_name)
         shipment.click('receive')
-        shipment.click('done')
+        shipment.click('do')
         purchase.reload()
         self.assertEqual(purchase.shipment_state, 'partially shipped')
         self.assertEqual(len(purchase.shipments), 1)
@@ -241,8 +241,8 @@ class Test(unittest.TestCase):
         # handle shipment exception
         handle_exception = purchase.click('handle_shipment_exception')
         handle_exception.form.recreate_moves.clear()
-
         handle_exception.execute('handle')
+
         purchase.reload()
         self.assertEqual(purchase.shipment_state, 'received')
         self.assertEqual(len(purchase.shipments), 2)

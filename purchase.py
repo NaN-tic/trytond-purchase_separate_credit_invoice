@@ -4,6 +4,7 @@ from trytond.modules.account_product.exceptions import AccountError
 from trytond.i18n import gettext
 from trytond.transaction import Transaction
 
+
 class Party(metaclass=PoolMeta):
     __name__ = 'party.party'
 
@@ -58,7 +59,6 @@ class Purchase(metaclass=PoolMeta):
 class PurchaseLine(metaclass=PoolMeta):
     __name__ = 'purchase.line'
 
-
     def _get_invoice_line_quantity(self):
         quantity = super()._get_invoice_line_quantity()
         if (not self.purchase.party.purchase_separate_credit_invoice or
@@ -70,7 +70,6 @@ class PurchaseLine(metaclass=PoolMeta):
         else:
             return 0
 
-
     def _get_invoiced_quantity(self):
         invoiced_qty = super()._get_invoiced_quantity()
         if not self.purchase.party.purchase_separate_credit_invoice:
@@ -79,7 +78,6 @@ class PurchaseLine(metaclass=PoolMeta):
         invoiced_quantity = sum([x.quantity for x in self.invoice_lines
                 if x.quantity >= 0])
         return invoiced_quantity
-
 
     def get_refund_invoice_line(self):
         pool = Pool()
@@ -90,7 +88,7 @@ class PurchaseLine(metaclass=PoolMeta):
 
         shipped_qty = 0
         for move in [x for  x in self.moves if x.state == 'done']:
-            shipped_qty += Uom.compute_qty(move.uom, move.quantity, self.unit)
+            shipped_qty += Uom.compute_qty(move.unit, move.quantity, self.unit)
 
         refunded_quantity = sum([x.quantity for x in self.invoice_lines
                 if x.quantity < 0])
