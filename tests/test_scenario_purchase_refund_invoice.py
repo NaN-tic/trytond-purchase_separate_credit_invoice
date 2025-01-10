@@ -241,6 +241,8 @@ class Test(unittest.TestCase):
         # handle shipment exception
         handle_exception = purchase.click('handle_shipment_exception')
         handle_exception.form.recreate_moves.clear()
+        handle_exception.form.ignore_moves.extend(
+            handle_exception.form.ignore_moves.find())
         handle_exception.execute('handle')
 
         purchase.reload()
