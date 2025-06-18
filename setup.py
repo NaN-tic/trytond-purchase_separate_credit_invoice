@@ -10,7 +10,7 @@ from configparser import ConfigParser
 MODULE = 'purchase_separate_credit_invoice'
 PREFIX = 'nantic'
 MODULE2PREFIX = {
-    'purchase_invoice_grouping',
+    'purchase_invoice_grouping': 'nantic',
 }
 
 
@@ -79,7 +79,7 @@ setup(name='%s_%s' % (PREFIX, MODULE),
         ],
     package_data={
         'trytond.modules.%s' % MODULE: (info.get('xml', [])
-            + ['tryton.cfg', 'locale/*.po', 'tests/*.rst']),
+            + ['tryton.cfg', 'view/*.xml', 'locale/*.po', 'tests/*.rst']),
         },
     classifiers=[
         'Development Status :: 5 - Production/Stable',
