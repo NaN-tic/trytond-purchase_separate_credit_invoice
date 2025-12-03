@@ -42,7 +42,7 @@ class Purchase(metaclass=PoolMeta):
             return
 
         with Transaction().set_context(refund_invoice=True):
-            invoice = self._get_invoice_purchase()
+            invoice = self._get_invoice()
         invoice_lines = []
         for line in self.lines:
             if line.type != 'line':
