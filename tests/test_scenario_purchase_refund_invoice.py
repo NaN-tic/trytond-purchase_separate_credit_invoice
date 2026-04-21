@@ -134,13 +134,13 @@ class Test(unittest.TestCase):
 
         set_user(stock_user.id)
 
-        # Purchase 2 products with an invoice method 'on shipment'
+        # Purchase 2 products with an invoice method 'on fulfillment'
         Purchase = Model.get('purchase.purchase')
         PurchaseLine = Model.get('purchase.line')
         purchase = Purchase()
         purchase.party = supplier
         purchase.payment_term = payment_term
-        purchase.invoice_method = 'shipment'
+        purchase.invoice_method = 'fulfillment'
         purchase_line = PurchaseLine()
         purchase.lines.append(purchase_line)
         purchase_line.product = product
@@ -177,13 +177,13 @@ class Test(unittest.TestCase):
         self.assertEqual(len(purchase.shipment_returns), 0)
         self.assertEqual(len(purchase.invoices), 1)
 
-        # Purchase 2 products with an invoice method 'on shipment'
+        # Purchase 2 products with an invoice method 'on fulfillment'
         Purchase = Model.get('purchase.purchase')
         PurchaseLine = Model.get('purchase.line')
         purchase = Purchase()
         purchase.party = separate_invoice_supplier
         purchase.payment_term = payment_term
-        purchase.invoice_method = 'shipment'
+        purchase.invoice_method = 'fulfillment'
         purchase_line = purchase.lines.new()
         purchase_line.product = product
         purchase_line.quantity = 2.0
