@@ -1,4 +1,4 @@
-from trytond.model import fields
+from trytond.model import ModelView, fields
 from trytond.pool import Pool, PoolMeta
 from trytond.modules.account_product.exceptions import AccountError
 from trytond.i18n import gettext
@@ -19,6 +19,7 @@ class Purchase(metaclass=PoolMeta):
     __name__ = 'purchase.purchase'
 
     @classmethod
+    @ModelView.button
     def process(cls, purchases):
         super().process(purchases)
         for purchase in purchases:
